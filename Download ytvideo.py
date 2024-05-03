@@ -17,8 +17,6 @@ def download_playlist(link):
             print("Download of playlist completed successfully.")
         except Exception as e:
             print(f"Error: {e}")
-            if isinstance(e, exceptions.AgeRestrictedError):
-                download_video()
 
 def download_content(link):
     if "list=" in link.lower():
@@ -47,28 +45,7 @@ def download_video(link):
         except Exception as e:
             print(f"Error: {e}")
             return
-#region
-# def google_authenticate(link):
-    # SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
-    # creds = None
-    # if os.path.exists('token.pickle'):
-    #     print("Loading Credentials...")
-    #     with open('token.pickle', 'rb') as token:
-    #         creds = pickle.load(token)
-    # if not creds or not creds.valid:
-    #     if creds and creds.expired and creds.refresh_token:
-    #         print("Refreshing Token...")
-    #         creds.refresh(Request())
-    #     else:
-    #         print("Fetching New Token...")
-    #         flow = InstalledAppFlow.from_client_secrets_file(
-    #             'credentials.json', SCOPES)
-    #         creds = flow.run_local_server(port=8080)
-    #     with open('token.pickle', 'wb') as token:
-    #         print("Saving Credentials to file...")
-    #         pickle.dump(creds, token)
-    # return download_ar_video(link)
-#endregion
+
 def customList():
     videoList = []
     link = input("Please paste the YouTube videos in the order you want to be downloaded (Enter 'ok' to finish):\n"+"Video 1: ")
