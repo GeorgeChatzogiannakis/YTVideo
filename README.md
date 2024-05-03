@@ -1,6 +1,6 @@
 # YTVideo
 Ever wanted to download a YouTube video, but got fed up with all the phishing scripts that run in the background of the websites that offer to do the downloading for you?
-Most of the online services that offer this kind of service, frequently hide some nasty code within them, so I decided to write a small python script using the ``yt_dlp`` library to accommodate just that. (Even thought there might be hundereds out there, if not more)
+Most of the online services that offer this kind of service, frequently hide some nasty code within them, so I decided to write a small python script using the ``yt_dlp`` and ``pytube`` libraries to accommodate just that. (Even thought there might be hundereds out there, if not more)
 
 ## <u>This script supports:</u><br>
 <ul>
