@@ -1,22 +1,28 @@
-from pytube import Playlist, exceptions
 from wakepy import keep
 import yt_dlp
 
 def download_playlist(link):
-    with keep.running():
+    ydl_opts = {
+        'outtmpl': '%(title)s.%(ext)s',
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'quiet' : True
+    }
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
-            youtube_playlist = Playlist(link)
-            total_Videos = len(youtube_playlist.video_urls)
-            if total_Videos < 1 :
-                print("No videos found")
-                return
-            print("{} videos found in playlist.".format(total_Videos))
-            for index, video_url in enumerate(youtube_playlist.video_urls,start=1):
-                print(f"Downloading video " + str(index)+"/"+str(total_Videos))
-                download_video(video_url)
-            print("Download of playlist completed successfully.")
+            # Extract playlist info
+            playlist_info = ydl.extract_info(link, download=False)
+            total_videos = len(playlist_info['entries'])
+            
+            for index, video in enumerate(playlist_info['entries'], start=1):
+                video_title = video.get('title', 'Unknown Title')
+                print(f"\033[31mDownloading video {index}: {video_title} - {index}/{total_videos}\033[39m")
+                ydl.download([video['webpage_url']])
+            
+            print("Download completed successfully.")
         except Exception as e:
             print(f"Error: {e}")
+            return
 
 def download_content(link):
     if "list=" in link.lower():
@@ -45,14 +51,15 @@ def download_video(link):
         except Exception as e:
             print(f"Error: {e}")
             return
-
-def customList():
-    videoList = []
-    link = input("Please paste the YouTube videos in the order you want to be downloaded (Enter 'ok' to finish):\n"+"Video 1: ")
-    while link.lower() != 'ok' and link.lower() != 'end' and link.lower() != 'done':
-        videoList.append(link)
-        link = input(f"Video {len(videoList) + 1}: ")
-
+        
+def customList(videoList=None):
+    if videoList is None:
+        videoList = []
+        link = input("Please paste the YouTube videos in the order you want to be downloaded (Enter 'ok' to finish):\n"+"Video 1: ")
+        while link.lower() != 'ok' and link.lower() != 'end' and link.lower() != 'done':
+            videoList.append(link)
+            link = input(f"Video {len(videoList) + 1}: ")
+    
     warning = input(f"You are about to download {len(videoList)} videos. Proceed? (y/n): ")
     while warning != 'y' and warning != 'n' and warning != '':
         smartass = input("Invalid Input! Please make sure you respond with the specified characters: ")
@@ -68,6 +75,7 @@ def customList():
                 videoList.append(link)
             else:
                 warning = 'y'
+    
 
     if warning.lower() == 'y'or warning.lower() == '':
         with keep.running():
@@ -76,7 +84,7 @@ def customList():
                 vid_or_aud = input("Please select output format. Type 'v' for video, 'a' for audio: ")
                 if vid_or_aud == "v":
                     for index, video in enumerate(videoList,start=1):
-                        print(f"Downloading video "+str(index)+"/"+str(len(videoList)))
+                        print(f"\033[31m"+"Downloading video "+str(index)+"/"+str(len(videoList))+"\033[39m")
                         download_video(video)
                         print("Operation completed successfully.")
                     return
@@ -88,6 +96,27 @@ def customList():
                     return
     if warning.lower() == 'exit' or warning.lower() == 'e' or warning.lower() == 'x':
         print("Operation canceled.")
+
+def download_channel_videos(channel_url):
+    ydl_opts = {
+        'quiet': True,
+        'extract_flat': True,
+        'force_generic_extractor': True,
+    }
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            channel_info = ydl.extract_info(channel_url, download=False)
+            if 'entries' not in channel_info:
+                print("No videos found")
+                return []
+            
+            print("Collecting videos...")
+            video_urls = [entry['url'] for entry in channel_info['entries']]
+            customList(video_urls)
+        except Exception as e:
+            print(f"Error: {e}")
+            return []
 
 def download_audio(link=None):
     if link is None:
@@ -147,6 +176,8 @@ def main():
         customList()
     elif link.lower() == 'm':
         download_audio()
+    elif link.lower().find("@") != -1:
+        download_channel_videos(link)
     elif link.lower() == 'c':
         print('Continuous mode initiated')
         while link.lower() != 'q':
@@ -155,7 +186,7 @@ def main():
         textFile = input("Please input the file path with with the file containing the URLs you want to download:\n> ")
         loadfile(textFile)
     elif link.lower() == 'q': 
-        print("Exiting the script...")
+        print("Exiting script...")
         exit(0)
     else:
         if valid == True:
